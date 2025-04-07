@@ -6,6 +6,6 @@
 ProjectileGoRound
 </h1>
 
-Replicate the <Projectile Go Round> Quest with an addition -> Sub Projectiles are working
+Replicate the "Projectile Go Round" Quest with an addition -> Sub Projectiles are working
 
 [![Requires BTD6 Mod Helper](https://raw.githubusercontent.com/gurrenm3/BTD-Mod-Helper/master/banner.png)](https://github.com/gurrenm3/BTD-Mod-Helper#readme)
