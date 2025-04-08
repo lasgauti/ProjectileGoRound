@@ -36,6 +36,9 @@ public class ProjectileGoRound : BloonsTD6Mod
         var towerModel2 = towerModel.rootModel.Duplicate().Cast<TowerModel>();
         List<ProjectileModel> projectiles = new List<ProjectileModel>();
         if (towerModel2.baseId == TowerType.DartlingGunner && towerModel2.tiers[0] > 3) { return; }
+        if (towerModel2.baseId == TowerType.Alchemist)
+        if (towerModel2.baseId == TowerType.SentryParagonGreen) { return; }
+        if (towerModel2.baseId == TowerType.BeastHandler ) { return; }
         if (towerModel != null)
         {
             var towers = InGame.Bridge.GetAllTowers().ToList();
@@ -44,22 +47,25 @@ public class ProjectileGoRound : BloonsTD6Mod
                 var tm = Game.instance.model.GetTowerFromId(tower.tower.towerModel.name);
                 if (tm != null)
                 {
-                    if (tm.baseId == TowerType.DartlingGunner && tm.tiers[0] > 3) { return; }
                     foreach (var attack in tm.GetAttackModels())
                     {
-                        foreach (var weap in attack.weapons)
+                        if (!attack.name.Contains("AttackAirUnitModel_Anti-MoabMissile_"))
                         {
-                            var proj = weap.projectile.Duplicate();
-                            if(proj.HasBehavior<TravelStraitModel>())
+                            foreach (var weap in attack.weapons)
                             {
-                                proj.GetBehavior<TravelStraitModel>().lifespan *= 1.5f;
-                                proj.AddBehavior(new ProjectileBlockerCollisionReboundModel("bounce", true, true));
-                                proj.AddBehavior(new MapBorderReboundModel("bounce", true));
+                                var proj = weap.projectile.Duplicate();
+                                if (proj.HasBehavior<TravelStraitModel>())
+                                {
+                                    proj.GetBehavior<TravelStraitModel>().lifespan *= 1.5f;
+                                    proj.AddBehavior(new ProjectileBlockerCollisionReboundModel("bounce", true, true));
+                                    proj.AddBehavior(new MapBorderReboundModel("bounce", true));
+                                }
+                                projectiles.Add(proj);
                             }
-                            projectiles.Add(proj);
                         }
                     }
                 }
+
             }
             foreach (var attack in towerModel2.GetAttackModels())
             {
