@@ -8,4 +8,13 @@ ProjectileGoRound
 
 Replicate the "Projectile Go Round" Quest with an addition -> Sub Projectiles are working
 
+Currently Disabled Tower/Upgrades to avoid issues:
+-Alchemist
+-Plasma Accelerator / Ray of Doom
+-Paragon Green Sentry (Master Builder)
+-Beast Handler
+
+Currently Disabled Tower/Upgrades to avoid lag:
+Sky Shredder Anti Moab Missile Attack
+
 [![Requires BTD6 Mod Helper](https://raw.githubusercontent.com/gurrenm3/BTD-Mod-Helper/master/banner.png)](https://github.com/gurrenm3/BTD-Mod-Helper#readme)
