@@ -9,9 +9,28 @@
         <Optimize>False</Optimize>
         <DebugType>embedded</DebugType>
     </PropertyGroup>
-    <ItemGroup>
-        <Content Include=".github\workflows\build.yml" />
+    <ItemGroup Condition="'$(GameDir)' != ''">
+        <Reference Include="$(GameDir)/MelonLoader/Il2CppAssemblies/*.dll">
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="MelonLoader">
+            <HintPath>$(GameDir)/MelonLoader/net6/MelonLoader.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Il2CppInterop.Runtime">
+            <HintPath>$(GameDir)/MelonLoader/net6/Il2CppInterop.Runtime.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Btd6ModHelper">
+            <HintPath>$(GameDir)/Mods/Btd6ModHelper.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
     </ItemGroup>
 
-    <Import Project="..\btd6.targets" />
+    <Import Project="../btd6.targets" Condition="'$(GameDir)' == ''" />
+
+    <Target Name="CheckGameDir" BeforeTargets="ResolveReferences" Condition="'$(GameDir)' != ''">
+        <Error Condition="!Exists('$(GameDir)/MelonLoader/Il2CppAssemblies/Assembly-CSharp.dll')"
+               Text="Set GameDir to a BloonsTD6 installation with generated MelonLoader assemblies." />
+    </Target>
 </Project>

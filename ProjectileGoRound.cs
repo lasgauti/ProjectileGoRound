@@ -1,23 +1,15 @@
-using MelonLoader;
-using BTD_Mod_Helper;
-using ProjectileGoRound;
-using Il2CppAssets.Scripts.Simulation.Towers.Weapons;
-using Il2CppAssets.Scripts.Models.Towers;
-using BTD_Mod_Helper.Extensions;
+using System;
 using System.Collections.Generic;
-using Il2CppAssets.Scripts.Unity.UI_New.InGame;
-using Il2CppNinjaKiwi.GUTS.Models.Endpoints.CT;
+using BTD_Mod_Helper;
+using BTD_Mod_Helper.Extensions;
+using Il2CppAssets.Scripts.Models.Towers;
 using Il2CppAssets.Scripts.Models.Towers.Projectiles;
-using static Il2CppSystem.DateTimeParse;
-using Il2CppAssets.Scripts.Simulation.Towers.Projectiles;
-using Il2CppAssets.Scripts.Simulation.Objects;
-using Il2CppAssets.Scripts.Models;
-using Il2CppAssets.Scripts.Models.Powers;
-using UnityEngine.Playables;
-using static Il2CppFacepunch.Steamworks.Inventory;
-using Harmony;
-using Il2CppAssets.Scripts.Unity;
 using Il2CppAssets.Scripts.Models.Towers.Projectiles.Behaviors;
+using Il2CppAssets.Scripts.Simulation.Towers.Weapons;
+using Il2CppAssets.Scripts.Unity;
+using Il2CppAssets.Scripts.Unity.UI_New.InGame;
+using MelonLoader;
+using ProjectileGoRound;
 
 [assembly: MelonInfo(typeof(ProjectileGoRound.ProjectileGoRound), ModHelperData.Name, ModHelperData.Version, ModHelperData.RepoOwner)]
 [assembly: MelonGame("Ninja Kiwi", "BloonsTD6")]
@@ -30,54 +22,55 @@ public class ProjectileGoRound : BloonsTD6Mod
     {
         ModHelper.Msg<ProjectileGoRound>("ProjectileGoRound loaded!");
     }
+
     public override void OnWeaponFire(Weapon weapon)
     {
-        var towerModel = weapon.attack.tower;
-        var towerModel2 = towerModel.rootModel.Duplicate().Cast<TowerModel>();
-        List<ProjectileModel> projectiles = new List<ProjectileModel>();
-        if (towerModel2.baseId == TowerType.DartlingGunner && towerModel2.tiers[0] > 3) { return; }
-        if (towerModel2.baseId == TowerType.Alchemist)
-        if (towerModel2.baseId == TowerType.SentryParagonGreen) { return; }
-        if (towerModel2.baseId == TowerType.BeastHandler ) { return; }
-        if (towerModel != null)
-        {
-            var towers = InGame.Bridge.GetAllTowers().ToList();
-            foreach (var tower in towers)
-            {
-                var tm = Game.instance.model.GetTowerFromId(tower.tower.towerModel.name);
-                if (tm != null)
-                {
-                    foreach (var attack in tm.GetAttackModels())
-                    {
-                        if (!attack.name.Contains("AttackAirUnitModel_Anti-MoabMissile_"))
-                        {
-                            foreach (var weap in attack.weapons)
-                            {
-                                var proj = weap.projectile.Duplicate();
-                                if (proj.HasBehavior<TravelStraitModel>())
-                                {
-                                    proj.GetBehavior<TravelStraitModel>().lifespan *= 1.5f;
-                                    proj.AddBehavior(new ProjectileBlockerCollisionReboundModel("bounce", true, true));
-                                    proj.AddBehavior(new MapBorderReboundModel("bounce", true));
-                                }
-                                projectiles.Add(proj);
-                            }
-                        }
-                    }
-                }
+        var tower = weapon.attack.tower;
+        if (tower == null) return;
 
-            }
-            foreach (var attack in towerModel2.GetAttackModels())
+        var towerModel = tower.rootModel.Cast<TowerModel>();
+        if (towerModel.baseId == TowerType.DartlingGunner && towerModel.tiers[0] > 3 ||
+            towerModel.baseId == TowerType.Alchemist ||
+            towerModel.baseId == TowerType.SentryParagonGreen ||
+            towerModel.baseId == TowerType.BeastHandler)
+        {
+            return;
+        }
+
+        var projectiles = new List<ProjectileModel>();
+        foreach (var placedTower in InGame.Bridge.GetAllTowers().ToList())
+        {
+            var model = Game.instance.model.GetTowerFromId(placedTower.tower.towerModel.name);
+            if (model == null) continue;
+
+            foreach (var attack in model.GetAttackModels())
             {
-                foreach (var weap in attack.weapons)
+                if (attack.name.Contains("AttackAirUnitModel_Anti-MoabMissile_")) continue;
+
+                foreach (var weaponModel in attack.weapons)
                 {
-                    Il2CppSystem.Random rnd = new Il2CppSystem.Random();
-                    int randomWeapon = rnd.Next(0, projectiles.Count);
-                    ProjectileModel proj2 = projectiles[randomWeapon];
-                    weap.SetProjectile(proj2); 
+                    var projectile = weaponModel.projectile.Duplicate();
+                    if (projectile.HasBehavior<TravelStraitModel>())
+                    {
+                        projectile.GetBehavior<TravelStraitModel>().lifespan *= 1.5f;
+                        projectile.AddBehavior(new ProjectileBlockerCollisionReboundModel("bounce", true, true));
+                        projectile.AddBehavior(new MapBorderReboundModel("bounce", true, true));
+                    }
+                    projectiles.Add(projectile);
                 }
             }
-            towerModel.UpdateRootModel(towerModel2);
-        } 
+        }
+
+        if (projectiles.Count == 0) return;
+
+        var updatedModel = towerModel.Duplicate();
+        foreach (var attack in updatedModel.GetAttackModels())
+        {
+            foreach (var weaponModel in attack.weapons)
+            {
+                weaponModel.SetProjectile(projectiles[Random.Shared.Next(projectiles.Count)]);
+            }
+        }
+        tower.UpdateRootModel(updatedModel);
     }
 }
